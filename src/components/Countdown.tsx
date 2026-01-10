@@ -2,20 +2,16 @@
 
 import { useState, useEffect } from "react";
 
-function getNextSunday8PM(): Date {
+function getEndOfDay(): Date {
   const now = new Date();
   const target = new Date(now);
 
-  // Set to next Sunday
-  const daysUntilSunday = (7 - now.getUTCDay()) % 7;
-  target.setUTCDate(now.getUTCDate() + (daysUntilSunday === 0 ? 7 : daysUntilSunday));
+  // Set to end of today (23:59:59.999)
+  target.setUTCHours(23, 59, 59, 999);
 
-  // Set to 09:00 UTC
-  target.setUTCHours(9, 0, 0, 0);
-
-  // If it's Sunday but before 09:00 UTC, use today
-  if (now.getUTCDay() === 0 && now.getUTCHours() < 9) {
-    target.setUTCDate(now.getUTCDate());
+  // If we've already passed the end of today, use end of tomorrow
+  if (now.getTime() >= target.getTime()) {
+    target.setUTCDate(target.getUTCDate() + 1);
   }
 
   return target;
@@ -43,7 +39,7 @@ function pad(n: number): string {
 }
 
 export function Countdown() {
-  const [target] = useState(() => getNextSunday8PM());
+  const [target] = useState(() => getEndOfDay());
   const [time, setTime] = useState(() => getTimeRemaining(target));
   const [mounted, setMounted] = useState(false);
 
