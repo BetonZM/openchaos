@@ -10,7 +10,7 @@ A self-evolving open source project. Every week, the community votes on PRs, and
 
 1. Anyone submits a PR
 2. Community votes via 👍 reactions on the PR
-3. Every **Sunday at 09:00 UTC**, the most-voted PR gets merged
+3. Every **day at the end of the day (23:59:59 UTC)**, the most-voted PR gets merged
 4. Vercel auto-deploys
 5. Repeat forever
 
