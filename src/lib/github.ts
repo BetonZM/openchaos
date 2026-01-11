@@ -63,18 +63,22 @@ export async function getOpenPRs(): Promise<PullRequest[]> {
         votes,
         createdAt: pr.created_at,
       };
-    })
+    }),
   );
 
   // Sort by votes descending
-  return prsWithVotes.sort((a, b) => b.votes - a.votes);
+  return prsWithVotes.sort((a, b) => {
+    // 1. Primary Sort: Net Score
+    if (b.votes !== a.votes) {
+      return b.votes - a.votes;
+    }
+
+    // 2. Secondary Sort: Creation Date (Newest Wins)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
 
-async function getPRVotes(
-  owner: string,
-  repo: string,
-  prNumber: number
-): Promise<number> {
+async function getPRVotes(owner: string, repo: string, prNumber: number): Promise<number> {
   let allReactions: GitHubReaction[] = [];
   let page = 1;
 
@@ -84,7 +88,7 @@ async function getPRVotes(
       {
         headers: getHeaders("application/vnd.github.squirrel-girl-preview+json"),
         next: { revalidate: 300 },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -106,5 +110,5 @@ async function getPRVotes(
     page++;
   }
 
-  return allReactions.filter((r) => r.content === "+1").length;
+  return allReactions.filter((r) => r.content === "+1").length - allReactions.filter((r) => r.content === "-1").length;
 }
