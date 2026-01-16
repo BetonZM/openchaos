@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 
-function getEndOfDay(): Date {
+function getNextMergeTime(): Date {
   const now = new Date();
   const target = new Date(now);
 
-  // Set to end of today (23:59:59.999)
-  target.setUTCHours(23, 59, 59, 999);
+  // Set to 9:00:00 UTC today
+  target.setUTCHours(9, 0, 0, 0);
 
-  // If we've already passed the end of today, use end of tomorrow
+  // If we've already passed 9:00 UTC today, use 9:00 UTC tomorrow
   if (now.getTime() >= target.getTime()) {
     target.setUTCDate(target.getUTCDate() + 1);
   }
@@ -39,14 +39,22 @@ function pad(n: number): string {
 }
 
 export function Countdown() {
-  const [target] = useState(() => getEndOfDay());
+  const [target, setTarget] = useState(() => getNextMergeTime());
   const [time, setTime] = useState(() => getTimeRemaining(target));
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const interval = setInterval(() => {
-      setTime(getTimeRemaining(target));
+      const now = new Date();
+      // If we've passed the target time, recalculate for the next day
+      if (now.getTime() >= target.getTime()) {
+        const newTarget = getNextMergeTime();
+        setTarget(newTarget);
+        setTime(getTimeRemaining(newTarget));
+      } else {
+        setTime(getTimeRemaining(target));
+      }
     }, 1000);
 
     return () => clearInterval(interval);
